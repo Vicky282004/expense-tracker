@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard - Expense Tracker</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard-class">
+<header>
+  <h1>💰 Expense Tracker Dashboard</h1>
+  <button onclick="logout()">Logout</button>
+</header>
+
+<main>
+  <section class="card">
+    <h2>Add Expense</h2>
+    <form id="expenseForm">
+      <input type="text" id="description" placeholder="Description" required>
+      <input type="number" id="amount" placeholder="Amount" step="0.01" required>
+      <input type="date" id="date" required>
+      <button type="submit">Add Expense</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Expenses</h2>
+    <ul id="expenseList"></ul>
+    <h3>Total: <span id="totalAmount">₹0</span></h3>
+  </section>
+
+  <section class="card" id="updateSection" style="display:none;">
+    <h2>Update Expense</h2>
+    <form id="updateForm">
+      <input type="hidden" id="updateId">
+      <input type="text" id="updateDescription" placeholder="Description" required>
+      <input type="number" id="updateAmount" placeholder="Amount" step="0.01" required>
+      <input type="date" id="updateDate" required>
+      <button type="submit">Update Expense</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Expense Breakdown</h2>
+    <canvas id="expenseChart"></canvas>
+  </section>
+</main>
+<script src="js/dashboard.js"></script>
+</body>
+</html>
