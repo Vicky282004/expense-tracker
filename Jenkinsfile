@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        APP_IMAGE   = "expense-tracker:latest"
+        APP_IMAGE    = "expense-tracker:latest"
         COMPOSE_FILE = "docker-compose.yaml"
     }
 
@@ -33,8 +33,8 @@ pipeline {
 
         stage('Start Services') {
             steps {
-                // Use docker compose (plugin syntax), works with new Docker
-                sh "docker compose -f ${COMPOSE_FILE} up -d --build"
+                // Use docker-compose (legacy binary)
+                sh "docker-compose -f ${COMPOSE_FILE} up -d --build"
             }
         }
 
@@ -50,7 +50,7 @@ pipeline {
     post {
         always {
             echo "Stopping and cleaning containers..."
-            sh "docker compose -f ${COMPOSE_FILE} down -v || true"
+            sh "docker-compose -f ${COMPOSE_FILE} down -v || true"
         }
     }
 }
