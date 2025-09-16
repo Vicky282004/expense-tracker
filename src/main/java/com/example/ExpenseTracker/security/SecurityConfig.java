@@ -46,6 +46,7 @@ public class SecurityConfig {
 
                         // Secure all API endpoints
                         .requestMatchers("/expenses/**").authenticated()
+                        .requestMatchers("/actuator/health").permitAll()
 
                         // Everything else must be authenticated
                         .anyRequest().authenticated()
