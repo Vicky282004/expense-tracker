@@ -63,8 +63,10 @@ pipeline {
 
     post {
         always {
-            echo "Stopping and cleaning containers..."
-            sh "docker-compose -f ${env.COMPOSE_FILE} down -v || true"
+            script {
+                sh "docker-compose -f ${env.COMPOSE_FILE} down -v || true"
+            }
         }
     }
 }
+
