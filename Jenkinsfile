@@ -9,6 +9,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                deleteDir() // Clean workspace before checkout
                 git branch: 'main', url: 'https://github.com/Vicky282004/expense-tracker.git'
             }
         }
@@ -41,7 +42,7 @@ pipeline {
             steps {
                 echo "Waiting for DB & App to be ready..."
                 script {
-                    def retries = 10
+                    def retries = 12
                     def success = false
                     for (int i = 0; i < retries; i++) {
                         try {
@@ -49,8 +50,8 @@ pipeline {
                             success = true
                             break
                         } catch (err) {
-                            echo "Attempt ${i+1}/${retries} failed, retrying in 5s..."
-                            sleep 5
+                            echo "Attempt ${i+1}/${retries} failed, retrying in 10s..."
+                            sleep 10
                         }
                     }
                     if (!success) {
