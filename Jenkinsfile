@@ -1,17 +1,18 @@
 pipeline {
     agent any
+
     environment {
-        APP_IMAGE = "expense-tracker:latest"
+        APP_IMAGE    = "expense-tracker:latest"
         COMPOSE_FILE = "docker-compose.yaml"
     }
 
-   stages {
+    stages {
         stage('Checkout') {
             steps {
+                // Simple checkout from GitHub
                 git branch: 'main', url: 'https://github.com/Vicky282004/expense-tracker.git'
             }
         }
-
 
         stage('Build JAR') {
             agent {
@@ -39,17 +40,35 @@ pipeline {
 
         stage('Wait for DB & App') {
             steps {
-                echo "Waiting for DB & App..."
-                sh "sleep 25"
-                sh "curl -f http://localhost:8080/actuator/health || exit 1"
+                echo "Waiting for DB & App to be ready..."
+                script {
+                    // Retry health check up to 10 times with 5s interval
+                    def retries = 10
+                    def success = false
+                    for (int i = 0; i < retries; i++) {
+                        try {
+                            sh "curl -f http://localhost:8080/actuator/health"
+                            success = true
+                            break
+                        } catch (err) {
+                            echo "Attempt ${i+1}/${retries} failed, retrying in 5s..."
+                            sleep 5
+                        }
+                    }
+                    if (!success) {
+                        error "App did not become healthy in time!"
+                    }
+                }
             }
         }
     }
 
     post {
         always {
-            echo "Stopping and cleaning containers..."
-            sh "docker-compose -f ${env.COMPOSE_FILE} down -v || true"
+            node {
+                echo "Stopping and cleaning containers..."
+                sh "docker-compose -f ${env.COMPOSE_FILE} down -v || true"
+            }
         }
     }
 }
