@@ -64,11 +64,10 @@ pipeline {
     }
 
     post {
-        always {
-            node {
-                echo "Stopping and cleaning containers..."
-                sh "docker-compose -f ${env.COMPOSE_FILE} down -v || true"
-            }
-        }
+    always {
+        echo "Stopping and cleaning containers..."
+        sh "docker-compose -f ${env.COMPOSE_FILE} down -v || true"
+    }
+}
     }
 }
