@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: Vicky@2824
+      MYSQL_DATABASE: expense_tracker
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - my-network
+
+  expense-tracker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: expense-tracker:latest
+    container_name: expense-tracker
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/expense_tracker
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Vicky@2824
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql-db
+    networks:
+      - my-network
+    restart: on-failure
+
+volumes:
+  mysql-data:
+
+networks:
+  my-network:
+    driver: bridge
