@@ -9,12 +9,17 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // This will be the only checkout
                 git branch: 'main', url: 'https://github.com/Vicky282004/expense-tracker.git'
             }
         }
 
         stage('Build JAR') {
+            agent {
+                docker {
+                    image 'maven:3.9.9-eclipse-temurin-24'
+                    args '-v $HOME/.m2:/root/.m2'
+                }
+            }
             steps {
                 sh 'mvn -B -DskipTests clean package'
             }
@@ -28,12 +33,13 @@ pipeline {
 
         stage('Start Services') {
             steps {
-                sh "docker-compose -f ${env.COMPOSE_FILE} up -d --build"
+                sh "docker-compose -f ${COMPOSE_FILE} up -d --build"
             }
         }
 
-        stage('Wait for DB & App') {
+        stage('Wait for App') {
             steps {
+                echo "Waiting for the app to be healthy..."
                 script {
                     def retries = 10
                     def success = false
@@ -57,7 +63,8 @@ pipeline {
 
     post {
         always {
-            sh "docker-compose -f ${env.COMPOSE_FILE} down -v || true"
+            echo "Cleaning up Docker Compose services..."
+            sh "docker-compose -f ${COMPOSE_FILE} down -v || true"
         }
     }
 }
