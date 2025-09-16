@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     options {
-        // Prevent Jenkins from doing an automatic SCM checkout at the start
         skipDefaultCheckout()
     }
 
@@ -41,39 +40,12 @@ pipeline {
                 sh "docker-compose -f ${COMPOSE_FILE} up -d --build"
             }
         }
-
-        stage('Wait for App') {
-            steps {
-                echo "Waiting for the app to be healthy..."
-                script {
-                    def retries = 10
-                    def success = false
-                    for (int i = 0; i < retries; i++) {
-                        try {
-                            sh "curl -f http://localhost:8080/actuator/health"
-                            success = true
-                            break
-                        } catch (err) {
-                            echo "Attempt ${i+1}/${retries} failed, retrying in 5s..."
-                            sleep 5
-                        }
-                    }
-                    if (!success) {
-                        error "App did not become healthy in time!"
-                    }
-                }
-            }
-        }
     }
 
     post {
         always {
             echo "Cleaning up Docker resources..."
-
-            // Stop and remove services + volumes
             sh "docker-compose -f ${COMPOSE_FILE} down -v || true"
-
-          
         }
     }
 }
