@@ -70,16 +70,10 @@ pipeline {
         always {
             echo "Cleaning up Docker resources..."
 
-            // Stop any containers attached to this network
-            sh '''
-                docker ps -q --filter "network=expensetracker_my-network" | xargs -r docker rm -f
-            '''
-
             // Stop and remove services + volumes
             sh "docker-compose -f ${COMPOSE_FILE} down -v || true"
 
-            // Remove the leftover network if it still exists
-            sh "docker network rm expensetracker_my-network || true"
+          
         }
     }
 }
