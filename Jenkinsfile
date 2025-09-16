@@ -1,12 +1,11 @@
 pipeline {
     agent any
-
     environment {
-        APP_IMAGE    = "expense-tracker:latest"
+        APP_IMAGE = "expense-tracker:latest"
         COMPOSE_FILE = "docker-compose.yaml"
     }
 
-   stages {
+    stages {
         stage('Checkout') {
             steps {
                 // Explicitly reference the Git tool
@@ -36,7 +35,7 @@ pipeline {
 
         stage('Start Services') {
             steps {
-                sh "docker-compose -f ${COMPOSE_FILE} up -d --build"
+                sh "docker-compose -f ${env.COMPOSE_FILE} up -d --build"
             }
         }
 
@@ -52,7 +51,7 @@ pipeline {
     post {
         always {
             echo "Stopping and cleaning containers..."
-            sh "docker-compose -f ${COMPOSE_FILE} down -v || true"
+            sh "docker-compose -f ${env.COMPOSE_FILE} down -v || true"
         }
     }
 }
