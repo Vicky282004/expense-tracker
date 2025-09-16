@@ -6,11 +6,12 @@ pipeline {
         COMPOSE_FILE = "docker-compose.yaml"
     }
 
-   stage('Checkout') {
-    steps {
-        git branch: 'main', url: 'https://github.com/Vicky282004/expense-tracker.git'
-    }
-}
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Vicky282004/expense-tracker.git'
+            }
+        }
 
         stage('Build JAR') {
             agent {
@@ -32,7 +33,6 @@ pipeline {
 
         stage('Start Services') {
             steps {
-                // Use docker-compose (legacy binary)
                 sh "docker-compose -f ${COMPOSE_FILE} up -d --build"
             }
         }
@@ -53,4 +53,3 @@ pipeline {
         }
     }
 }
-
