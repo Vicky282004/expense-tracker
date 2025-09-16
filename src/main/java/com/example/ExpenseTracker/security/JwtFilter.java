@@ -33,42 +33,51 @@ public class JwtFilter extends OncePerRequestFilter {
     private UserRepository userRepo;
 
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    
+@Override
+protected void doFilterInternal(HttpServletRequest request,
+                                HttpServletResponse response,
+                                FilterChain filterChain) throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
-        String username = null;
-        String token = null;
-
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-            try {
-                username = jwtUtil.extractUsername(token);
-            } catch (Exception e) {
-                System.out.println("Invalid JWT Token: " + e.getMessage());
-            }
-        }
-
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            User user = userRepo.findByUsername(username);
-
-            if (user != null && jwtUtil.validateToken(token, username)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                user.getUsername(),
-                                null,
-                                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")) // 👈 default role
-                        );
-
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            }
-        }
-
+    // Skip JWT check for public endpoints
+    String path = request.getServletPath();
+    if (path.equals("/actuator/health") || path.startsWith("/auth/") 
+        || path.endsWith(".html") || path.startsWith("/css/") 
+        || path.startsWith("/js/") || path.startsWith("/images/")) {
         filterChain.doFilter(request, response);
+        return;
     }
+
+    final String authHeader = request.getHeader("Authorization");
+    String username = null;
+    String token = null;
+
+    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        token = authHeader.substring(7);
+        try {
+            username = jwtUtil.extractUsername(token);
+        } catch (Exception e) {
+            System.out.println("Invalid JWT Token: " + e.getMessage());
+        }
+    }
+
+    if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        User user = userRepo.findByUsername(username);
+
+        if (user != null && jwtUtil.validateToken(token, username)) {
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(
+                            user.getUsername(),
+                            null,
+                            Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+                    );
+
+            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+        }
+    }
+
+    filterChain.doFilter(request, response);
+}
 
 }
