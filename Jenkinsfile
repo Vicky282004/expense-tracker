@@ -6,10 +6,13 @@ pipeline {
         COMPOSE_FILE = "docker-compose.yaml"
     }
 
-    stages {
+   stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/Vicky282004/expense-tracker.git'
+                // Explicitly reference the Git tool
+                git branch: 'main',
+                    url: 'https://github.com/Vicky282004/expense-tracker.git',
+                    tool: 'Default'
             }
         }
 
