@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    options {
+        // Prevent Jenkins from doing an automatic SCM checkout at the start
+        skipDefaultCheckout()
+    }
+
     environment {
         APP_IMAGE    = "expense-tracker:latest"
         COMPOSE_FILE = "docker-compose.yaml"
@@ -68,3 +73,4 @@ pipeline {
         }
     }
 }
+
