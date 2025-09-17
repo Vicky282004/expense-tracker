@@ -9,7 +9,6 @@ pipeline {
         APP_NAME     = "expense-tracker"
         APP_IMAGE    = "expense-tracker:latest"
         COMPOSE_FILE = "docker-compose.yaml"
-        DOCKERHUB_USER = "vignesh282004"
     }
 
     stages {
@@ -33,7 +32,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                // --no-cache ensures all changes are included in the build
+                // --no-cache ensures all changes are included
                 sh "docker build --no-cache -t ${APP_IMAGE} ."
             }
         }
@@ -41,19 +40,18 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh """
+                    sh '''
                         echo "Logging into Docker Hub..."
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
-                        # Verify variables
-                        echo "APP_IMAGE=${APP_IMAGE}"
-                        echo "DOCKER_USER=${DOCKER_USER}"
-                        echo "APP_NAME=${APP_NAME}"
+                        # Trim variables to remove spaces
+                        DOCKER_USER=$(echo $DOCKER_USER | xargs)
+                        APP_NAME=$(echo $APP_NAME | xargs)
 
-                        # Tag and push
+                        echo "Tagging Docker image..."
                         docker tag ${APP_IMAGE} ${DOCKER_USER}/${APP_NAME}:latest
                         docker push ${DOCKER_USER}/${APP_NAME}:latest
-                    """
+                    '''
                 }
             }
         }
@@ -72,4 +70,5 @@ pipeline {
         }
     }
 }
+
 
