@@ -6,8 +6,10 @@ pipeline {
     }
 
     environment {
+        APP_NAME     = "expense-tracker"
         APP_IMAGE    = "expense-tracker:latest"
         COMPOSE_FILE = "docker-compose.yaml"
+        DOCKERHUB_USER = "vignesh282004"   // replace with your Docker Hub username
     }
 
     stages {
@@ -35,6 +37,18 @@ pipeline {
             }
         }
 
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh """
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker tag ${APP_IMAGE} $DOCKER_USER/${APP_NAME}:latest
+                        docker push $DOCKER_USER/${APP_NAME}:latest
+                    """
+                }
+            }
+        }
+
         stage('Start Services') {
             steps {
                 sh "docker-compose -f ${COMPOSE_FILE} up -d --build"
@@ -49,5 +63,4 @@ pipeline {
         }
     }
 }
-
 
